@@ -1,3 +1,5 @@
+package rocks.zipcode.ATM;
+
 import java.text.DecimalFormat;
 import java.util.InputMismatchException;
 import java.util.Scanner;

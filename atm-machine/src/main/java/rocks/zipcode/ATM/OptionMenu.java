@@ -1,3 +1,5 @@
+package rocks.zipcode.ATM;
+
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ public class OptionMenu {
 	Scanner menuInput = new Scanner(System.in);
 	DecimalFormat moneyFormat = new DecimalFormat("'$'###,##0.00");
 	HashMap<Integer, Account> data = new HashMap<Integer, Account>();
+	Account account = new Account();
+//	Account customerAcct = new Account(menuInput.nextInt(), menuInput.nextInt(), account.getCheckingBalance(), account.getSavingBalance());
 
 	public void getLogin() throws IOException {
 		boolean end = false;
@@ -20,34 +24,35 @@ public class OptionMenu {
 				System.out.print("\nEnter your customer number: ");
 				customerNumber = menuInput.nextInt();
 				System.out.print("\nEnter your PIN number: ");
-				pinNumber = menuInput.nextInt();
+				pinNumber = menuInput.nextInt(); //Customer inputs PIN Number
 				Iterator it = data.entrySet().iterator();
-				while (it.hasNext()) {
+				while (it.hasNext()) { //Checks customer PIN (value) against the customer data (key)
 					Map.Entry pair = (Map.Entry) it.next();
 					Account acc = (Account) pair.getValue();
 					if (data.containsKey(customerNumber) && pinNumber == acc.getPinNumber()) {
-						getAccountType(acc);
+						getAccountType(acc); //Off to next step
 						end = true;
 						break;
-					}
+					} //Once customer enters correct PIN, the system will match the corresponding account number to the PIN.
 				}
 				if (!end) {
 					System.out.println("\nWrong Customer Number or Pin Number");
-				}
+				} //Customer will have to try again due to this being in While loop.
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Character(s). Only Numbers.");
-			}
+			} //Same thing, customer will try again.
 		}
 	}
 
-	public void getAccountType(Account acc) {
+	public void getAccountType(Account acc) { //After login is complete, we go here. Step 3.
 		boolean end = false;
 		while (!end) {
 			try {
 				System.out.println("\nSelect the account you want to access: ");
 				System.out.println(" Type 1 - Checking Account");
-				System.out.println(" Type 2 - Savings Account");
-				System.out.println(" Type 3 - Exit");
+				System.out.println(" Type 2 - Savings Account");//This is where modifications will begin
+				System.out.println(" Type 3 - Check Statement balances"); //Statement Balances added
+				System.out.println(" Type 4 - Exit");
 				System.out.print("\nChoice: ");
 
 				int selection = menuInput.nextInt();
@@ -60,6 +65,10 @@ public class OptionMenu {
 					getSaving(acc);
 					break;
 				case 3:
+					account.getCheckingBalance();
+					account.getSavingBalance();
+					break;
+				case 4:
 					end = true;
 					break;
 				default:
@@ -161,7 +170,7 @@ public class OptionMenu {
 				Iterator it = data.entrySet().iterator();
 				while (it.hasNext()) {
 					Map.Entry pair = (Map.Entry) it.next();
-					if (!data.containsKey(cst_no)) {
+					if (!data.containsKey(cst_no)) {//Checks if the created acct no. exists.
 						end = true;
 					}
 				}
@@ -175,13 +184,13 @@ public class OptionMenu {
 		}
 		System.out.println("\nEnter PIN to be registered");
 		int pin = menuInput.nextInt();
-		data.put(cst_no, new Account(cst_no, pin));
+		data.put(cst_no, new Account(cst_no, pin)); //Customer's data is now in the system
 		System.out.println("\nYour new account has been successfuly registered!");
 		System.out.println("\nRedirecting to login.............");
 		getLogin();
 	}
 
-	public void mainMenu() throws IOException {
+	public void mainMenu() throws IOException { //Where everything starts from line 10 of ATM class
 		data.put(952141, new Account(952141, 191904, 1000, 5000));
 		data.put(123, new Account(123, 123, 20000, 50000));
 		boolean end = false;

@@ -1,3 +1,5 @@
+package rocks.zipcode.ATM;
+
 import java.io.IOException;
 
 public class ATM {
