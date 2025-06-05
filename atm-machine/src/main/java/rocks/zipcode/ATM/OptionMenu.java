@@ -65,8 +65,8 @@ public class OptionMenu {
 					getSaving(acc);
 					break;
 				case 3:
-					account.getCheckingBalance();
-					account.getSavingBalance();
+					System.out.printf("");account.getSavingBalance();
+					System.out.printf("%s", "Checking Account Balance: " + account.getCheckingBalance());;
 					break;
 				case 4:
 					end = true;
