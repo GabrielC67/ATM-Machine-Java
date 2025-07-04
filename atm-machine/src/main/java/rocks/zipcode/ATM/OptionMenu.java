@@ -1,19 +1,15 @@
 package rocks.zipcode.ATM;
 
 import java.io.IOException;
+import java.sql.SQLOutput;
 import java.text.DecimalFormat;
-import java.util.HashMap;
-import java.util.InputMismatchException;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Scanner;
+import java.util.*;
 
 public class OptionMenu {
 	Scanner menuInput = new Scanner(System.in);
 	DecimalFormat moneyFormat = new DecimalFormat("'$'###,##0.00");
-	HashMap<Integer, Account> data = new HashMap<Integer, Account>();
+	HashMap<Integer, List<Account>> data = new HashMap<>(); //Modified value to represent a list instead of just one value.
 	Account account = new Account();
-//	Account customerAcct = new Account(menuInput.nextInt(), menuInput.nextInt(), account.getCheckingBalance(), account.getSavingBalance());
 
 	public void getLogin() throws IOException {
 		boolean end = false;
@@ -21,23 +17,37 @@ public class OptionMenu {
 		int pinNumber = 0;
 		while (!end) {
 			try {
-				System.out.print("\nEnter your customer number: ");
-				customerNumber = menuInput.nextInt();
-				System.out.print("\nEnter your PIN number: ");
-				pinNumber = menuInput.nextInt(); //Customer inputs PIN Number
-				Iterator it = data.entrySet().iterator();
-				while (it.hasNext()) { //Checks customer PIN (value) against the customer data (key)
-					Map.Entry pair = (Map.Entry) it.next();
-					Account acc = (Account) pair.getValue();
-					if (data.containsKey(customerNumber) && pinNumber == acc.getPinNumber()) {
-						getAccountType(acc); //Off to next step
-						end = true;
-						break;
-					} //Once customer enters correct PIN, the system will match the corresponding account number to the PIN.
-				}
-				if (!end) {
-					System.out.println("\nWrong Customer Number or Pin Number");
-				} //Customer will have to try again due to this being in While loop.
+					System.out.print("\nEnter your customer number: ");
+					customerNumber = menuInput.nextInt();
+					System.out.print("\nEnter your PIN number: ");
+					pinNumber = menuInput.nextInt(); //Customer inputs PIN Number
+					List<Account> accounts = data.get(customerNumber);
+
+					if (accounts != null) {
+					// Find accounts with matching PIN
+						int finalPinNumber = pinNumber;
+						List<Account> matchedAccounts = accounts.stream()
+							.filter(acc -> acc.getPinNumber() == finalPinNumber)
+							.toList();
+						if (!matchedAccounts.isEmpty()) {
+							// If multiple, let user select
+							if (matchedAccounts.size() > 1) {
+								System.out.println("Select account:\n");
+								for (int i = 0; i < matchedAccounts.size(); i++) {
+									System.out.println((i + 1) + " - Account #" + (i + 1)); //I'll come back to modify this later to show the choice between accounts.
+								}
+								int accChoice = menuInput.nextInt() - 1;
+								getAccountType(matchedAccounts.get(accChoice));
+							} else {
+								getAccountType(matchedAccounts.get(0));
+							}
+							end = true;
+						}
+
+						if (!end) {
+							System.out.println("\nWrong Customer Number or Pin Number");
+						} //Customer will have to try again due to this being in While loop.
+					}
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Character(s). Only Numbers.");
 			} //Same thing, customer will try again.
@@ -58,22 +68,22 @@ public class OptionMenu {
 				int selection = menuInput.nextInt();
 
 				switch (selection) {
-				case 1:
-					getChecking(acc);
-					break;
-				case 2:
-					getSaving(acc);
-					break;
-				case 3:
-					System.out.printf("");account.getSavingBalance();
-					System.out.printf("%s", "Checking Account Balance: " + account.getCheckingBalance());;
-					break;
-				case 4:
-					end = true;
-					break;
-				default:
-					System.out.println("\nInvalid Choice.");
-				}
+					case 1:
+						List <Account> checkingAccounts = data.get(acc.getCustomerNumber()).stream()
+								.filter(a -> a.isCheckingAccount()).toList();
+					case 2:
+						getSaving(acc);
+						break;
+					case 3:
+						System.out.printf("%s", "\nChecking Account Balance: " + moneyFormat.format(acc.getCheckingBalance()));
+						System.out.printf("%s", "\nSavings Account Balance: " + account.getSavingBalance());
+						break;
+					case 4:
+						end = true;
+						break;
+					default:
+						System.out.println("\nInvalid Choice.");
+					}
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Choice.");
 				menuInput.next();
@@ -162,37 +172,42 @@ public class OptionMenu {
 
 	public void createAccount() throws IOException {
 		int cst_no = 0;
-		boolean end = false;
-		while (!end) {
+		boolean validCustomer = false;
+		while (!validCustomer) {
 			try {
 				System.out.println("\nEnter your customer number ");
 				cst_no = menuInput.nextInt();
-				Iterator it = data.entrySet().iterator();
-				while (it.hasNext()) {
-					Map.Entry pair = (Map.Entry) it.next();
-					if (!data.containsKey(cst_no)) {//Checks if the created acct no. exists.
-						end = true;
-					}
-				}
-				if (!end) {
+				if(!data.containsKey(cst_no)) {
+					data.put(cst_no, new ArrayList<>());
+					validCustomer = true;
+				} else {
 					System.out.println("\nThis customer number is already registered");
 				}
+//				Iterator it = data.entrySet().iterator();
+//				while (!) {
+//					Map.Entry pair = (Map.Entry) it.next();
+//					if (!data.containsKey(cst_no)) {//Checks if the created acct no. exists.
+//						end = true;
+//					}
+//				}
+//				if (!end) {
+//					System.out.println("\nThis customer number is already registered");
+//				}
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Choice.");
 				menuInput.next();
 			}
 		}
-		System.out.println("\nEnter PIN to be registered");
-		int pin = menuInput.nextInt();
-		data.put(cst_no, new Account(cst_no, pin)); //Customer's data is now in the system
-		System.out.println("\nYour new account has been successfuly registered!");
+		addMoreAccounts(cst_no);
 		System.out.println("\nRedirecting to login.............");
 		getLogin();
 	}
 
+
+
 	public void mainMenu() throws IOException { //Where everything starts from line 10 of ATM class
-		data.put(952141, new Account(952141, 191904, 1000, 5000));
-		data.put(123, new Account(123, 123, 20000, 50000));
+		data.put(952141, new ArrayList<>(List.of(new Account(952,191904, 1000, 5000))));
+		data.put(123, new ArrayList<>(List.of(new Account(123, 123, 20000, 50000))));
 		boolean end = false;
 		while (!end) {
 			try {
@@ -220,5 +235,50 @@ public class OptionMenu {
 		System.out.println("\nThank You for using this ATM.\n");
 		menuInput.close();
 		System.exit(0);
+	}
+
+	private void addMoreAccounts(int cst_no) {
+		while (true) {
+			System.out.println("\nDo you want to add another account? Select (Y/N):\n");
+			String custInput = menuInput.next();
+			if (custInput.equalsIgnoreCase("y")) {
+				break; // Proceed to add accounts
+			} else if (custInput.equalsIgnoreCase("n")) {
+				return; // Exit the method
+			} else {
+				System.out.println("\nInvalid Input! Please enter Y or N.\n");
+			}
+
+			boolean addAccount = true;
+			while (addAccount) {
+				System.out.println("\nEnter PIN to be registered for this account:\n");
+				int pin = menuInput.nextInt();
+
+				//This is to distinguish what the user will select when adding a new account into their profile.
+				String accountType = "";
+				while (true) {
+					System.out.println("\nEnter account type (Checking/Savings):\n");
+					accountType = menuInput.next();
+					if (accountType.equalsIgnoreCase("Checking") || accountType.equalsIgnoreCase("Savings")) {
+						break;
+					} else {
+						System.out.println("\nInvalid Input!");
+					}
+				}
+				Account newAccount = new Account(cst_no, pin, accountType);
+				data.get(cst_no).add(newAccount); //Customer's data is now in the system
+				System.out.println("\nAccount added successfully!");
+
+				System.out.println("\nDo you want to add another account? Select (Y/N):");
+				String response = menuInput.next();
+				if (Objects.equals(response, "N")) {
+					addAccount = false;
+				} else if (Objects.equals(response, "Y")) { //I know this may be redundant, but this is for readability.
+					continue;
+				} else {
+					System.out.println("\nInvalid Input! Please enter Y or N.");
+				}
+			}
+		}
 	}
 }

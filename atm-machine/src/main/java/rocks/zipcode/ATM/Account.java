@@ -10,6 +10,7 @@ public class Account {
 	private int pinNumber;
 	private double checkingBalance = 0;
 	private double savingBalance = 0;
+	private String accountType;
 
 	Scanner input = new Scanner(System.in);
 	DecimalFormat moneyFormat = new DecimalFormat("'$'###,##0.00");
@@ -22,11 +23,30 @@ public class Account {
 		this.pinNumber = pinNumber;
 	}
 
+	/*This will not be modified due to what's already given in the lab. I'll make a new method for adding new accounts to
+	profile.*/
 	public Account(int customerNumber, int pinNumber, double checkingBalance, double savingBalance) {
 		this.customerNumber = customerNumber;
 		this.pinNumber = pinNumber;
 		this.checkingBalance = checkingBalance;
 		this.savingBalance = savingBalance;
+	}
+
+	// Constructor for specifying account type that the user wants to save. Also, this'll allow for account filtering.
+	public Account(int customerNumber, int pinNumber, String accountType) {
+		this.customerNumber = customerNumber;
+		this.pinNumber = pinNumber;
+		this.accountType = accountType;
+		this.checkingBalance = 0;
+		this.savingBalance = 0;
+	}
+
+	public boolean isCheckingAccount() {
+		return "Checking".equalsIgnoreCase(accountType);
+	}
+
+	public boolean isSavingsAccount() {
+		return "Savings".equalsIgnoreCase(accountType);
 	}
 
 	public int setCustomerNumber(int customerNumber) {
