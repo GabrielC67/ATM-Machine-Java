@@ -6,39 +6,24 @@ import java.util.Scanner;
 
 public class Account {
 	// variables
-	private int customerNumber;
-	private int pinNumber;
-	private double checkingBalance = 0;
-	private double savingBalance = 0;
+	private Double checkingBalance = 0.00;
+	private Double savingBalance = 0.00;
 	private String accountType;
 
 	Scanner input = new Scanner(System.in);
 	DecimalFormat moneyFormat = new DecimalFormat("'$'###,##0.00");
 
-	public Account() {
-	}
+	public Account() {} //Nullary Constructor
 
-	public Account(int customerNumber, int pinNumber) {
-		this.customerNumber = customerNumber;
-		this.pinNumber = pinNumber;
-	}
-
-	/*This will not be modified due to what's already given in the lab. I'll make a new method for adding new accounts to
-	profile.*/
-	public Account(int customerNumber, int pinNumber, double checkingBalance, double savingBalance) {
-		this.customerNumber = customerNumber;
-		this.pinNumber = pinNumber;
-		this.checkingBalance = checkingBalance;
-		this.savingBalance = savingBalance;
-	}
-
-	// Constructor for specifying account type that the user wants to save. Also, this'll allow for account filtering.
-	public Account(int customerNumber, int pinNumber, String accountType) {
-		this.customerNumber = customerNumber;
-		this.pinNumber = pinNumber;
+	public Account(String accountType, Double balance) {
 		this.accountType = accountType;
-		this.checkingBalance = 0;
-		this.savingBalance = 0;
+		if ("Checking".equalsIgnoreCase(accountType)) {
+			this.checkingBalance = balance;
+		} else if ("Saving".equalsIgnoreCase(accountType)) {
+			this.savingBalance = balance;
+		} else {
+			throw new IllegalArgumentException("Invalid account type: " + accountType);
+		}
 	}
 
 	public boolean isCheckingAccount() {
@@ -49,24 +34,6 @@ public class Account {
 		return "Savings".equalsIgnoreCase(accountType);
 	}
 
-	public int setCustomerNumber(int customerNumber) {
-		this.customerNumber = customerNumber;
-		return customerNumber;
-	}
-
-	public int getCustomerNumber() {
-		return customerNumber;
-	}
-
-	public int setPinNumber(int pinNumber) {
-		this.pinNumber = pinNumber;
-		return pinNumber;
-	}
-
-	public int getPinNumber() {
-		return pinNumber;
-	}
-
 	public double getCheckingBalance() {
 		return checkingBalance;
 	}
@@ -75,32 +42,32 @@ public class Account {
 		return savingBalance;
 	}
 
-	public double calcCheckingWithdraw(double amount) {
+	public double calcCheckingWithdraw(Double amount) {
 		checkingBalance = (checkingBalance - amount);
 		return checkingBalance;
 	}
 
-	public double calcSavingWithdraw(double amount) {
+	public double calcSavingWithdraw(Double amount) {
 		savingBalance = (savingBalance - amount);
 		return savingBalance;
 	}
 
-	public double calcCheckingDeposit(double amount) {
+	public double calcCheckingDeposit(Double amount) {
 		checkingBalance = (checkingBalance + amount);
 		return checkingBalance;
 	}
 
-	public double calcSavingDeposit(double amount) {
+	public double calcSavingDeposit(Double amount) {
 		savingBalance = (savingBalance + amount);
 		return savingBalance;
 	}
 
-	public void calcCheckTransfer(double amount) {
+	public void calcCheckTransfer(Double amount) {
 		checkingBalance = checkingBalance - amount;
 		savingBalance = savingBalance + amount;
 	}
 
-	public void calcSavingTransfer(double amount) {
+	public void calcSavingTransfer(Double amount) {
 		savingBalance = savingBalance - amount;
 		checkingBalance = checkingBalance + amount;
 	}
@@ -111,7 +78,7 @@ public class Account {
 			try {
 				System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 				System.out.print("\nAmount you want to withdraw from Checking Account: ");
-				double amount = input.nextDouble();
+				Double amount = input.nextDouble();
 				if ((checkingBalance - amount) >= 0 && amount >= 0) {
 					calcCheckingWithdraw(amount);
 					System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
@@ -132,7 +99,7 @@ public class Account {
 			try {
 				System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
 				System.out.print("\nAmount you want to withdraw from Savings Account: ");
-				double amount = input.nextDouble();
+				Double amount = input.nextDouble();
 				if ((savingBalance - amount) >= 0 && amount >= 0) {
 					calcSavingWithdraw(amount);
 					System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
@@ -153,7 +120,7 @@ public class Account {
 			try {
 				System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 				System.out.print("\nAmount you want to deposit from Checking Account: ");
-				double amount = input.nextDouble();
+				Double amount = input.nextDouble();
 				if ((checkingBalance + amount) >= 0 && amount >= 0) {
 					calcCheckingDeposit(amount);
 					System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
@@ -174,7 +141,7 @@ public class Account {
 			try {
 				System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
 				System.out.print("\nAmount you want to deposit into your Savings Account: ");
-				double amount = input.nextDouble();
+				Double amount = input.nextDouble();
 
 				if ((savingBalance + amount) >= 0 && amount >= 0) {
 					calcSavingDeposit(amount);
@@ -204,7 +171,7 @@ public class Account {
 					case 1:
 						System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 						System.out.print("\nAmount you want to deposit into your Savings Account: ");
-						double amount = input.nextDouble();
+						Double amount = input.nextDouble();
 						if ((savingBalance + amount) >= 0 && (checkingBalance - amount) >= 0 && amount >= 0) {
 							calcCheckTransfer(amount);
 							System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
@@ -231,7 +198,7 @@ public class Account {
 					case 1:
 						System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
 						System.out.print("\nAmount you want to deposit into your savings account: ");
-						double amount = input.nextDouble();
+						Double amount = input.nextDouble();
 						if ((checkingBalance + amount) >= 0 && (savingBalance - amount) >= 0 && amount >= 0) {
 							calcSavingTransfer(amount);
 							System.out.println("\nCurrent checking account balance: " + moneyFormat.format(checkingBalance));
