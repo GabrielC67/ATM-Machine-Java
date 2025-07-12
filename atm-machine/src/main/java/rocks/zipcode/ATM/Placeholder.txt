@@ -1,0 +1,37 @@
+				if (custInput.equalsIgnoreCase("y")) {
+					break; // Proceed to add accounts
+				} else  else {
+					System.out.println("\nInvalid Input! Please enter Y or N.");
+				}
+
+				boolean addAccount = true;
+				while (addAccount) {
+					System.out.println("\nEnter your PIN to add an account:");
+					int pin = menuInput.nextInt();
+					if (pin != customer.getPinNumber()) {
+						System.out.println("Incorrect PIN. Try again.");
+						continue;
+					}
+
+					//This is to distinguish what the user will select when adding a new account into their profile.
+					String accountType = "";
+					while (true) {
+						System.out.println("\nEnter account type (Checking/Savings):");
+						accountType = menuInput.next();
+						if (accountType.equalsIgnoreCase("Checking") || accountType.equalsIgnoreCase("Savings")) {
+							break;
+						} else {
+							System.out.println("\nInvalid Input!");
+						}
+					}
+					Account newAccount = new Account();
+					data.get(customer).add(newAccount); //Customer's data is now in the system
+					System.out.println("\nAccount added successfully!");
+
+					System.out.println("\nDo you want to add another account? Select (Y/N):");
+					String response = menuInput.next();
+					if (response.equalsIgnoreCase("n")) {
+						end = true;
+					} else if (!response.equalsIgnoreCase("y")) {
+						System.out.println("\nInvalid Input! Please enter Y or N.");
+					}

@@ -10,6 +10,7 @@ public class OptionMenu {
 	HashMap<CustomerInformation, List<Account>> data = new HashMap<>(); //Modified value to represent a list instead of just one value.
 	Account account = new Account();
 
+
 	public void getLogin() throws IOException {
 		boolean end = false;
 		int customerNumber = 0;
@@ -53,7 +54,8 @@ public class OptionMenu {
 		}
 	}
 
-	public void getAccountType(Account acc) { //After login is complete, we go here. Step 3.
+	//Step 3: After login is complete, and/or accounts are added to the user profile -> This is step 3.//
+	public void getAccountType(Account acc) {
 		boolean end = false;
 		while (!end) {
 			try {
@@ -202,75 +204,48 @@ public class OptionMenu {
 		}
 	}
 
-	public void createAccount() throws IOException {
+	//Step 2: Profile will be created here.-> Step 2
+	public void createProfile() throws IOException {
+		CustomerInformation customer;
+
 		int cst_no = 0;
-		String input = "";
-		String inputNewPIN = "", inputNewPINAgain = "";
-		CustomerInformation customer = new CustomerInformation();
-		Iterator<Map.Entry<CustomerInformation, List<Account>>> it = data.entrySet().iterator();
-		boolean validCustomer = false;
-		while (!validCustomer) {
+		boolean end = false;
+		while (!end) {
 			try {
-				System.out.println("\nEnter your customer number: ");
+				System.out.println("\nEnter your customer number ");
 				cst_no = menuInput.nextInt();
-				Map.Entry<CustomerInformation, List<Account>> pair = it.next();
-				if(!data.containsKey(cst_no)) {
-					System.out.println("\n Welcome to ZipTM! Enter your new PIN \n Your PIN must be at least 4 numbers: ");
-					inputNewPIN = menuInput.next();
-
-					if(inputNewPIN.matches("\\d{4,}")){
-						int pinNumber = Integer.parseInt(inputNewPIN);
-						System.out.println("Great!\n Please enter your PIN again to confirm.");
-						inputNewPINAgain = menuInput.next();
-
-						if (inputNewPINAgain.matches("\\d{4,}")) {
-							int confirmationPIN = Integer.parseInt(inputNewPINAgain);
-
-							if (confirmationPIN != pinNumber) {
-								System.out.println("\n Your PINs do not match! Do you want to try again? (Y/N): ");
-								input = menuInput.next();
-								if(input.equalsIgnoreCase("N")){
-									return;
-								} else if(!input.equalsIgnoreCase("Y")) {
-									throw new IllegalArgumentException("Invalid Input! Please try again.");
-								} else {
-									continue;
-								}
-							} else {
-								data.put(customer, new ArrayList<Account>());
-								validCustomer = true;
-
-								}
-							}
-						}
-					} else {
-						System.out.println("Your PIN must be at least 4 digits and all numbers.");
-					}
-			if (!validCustomer) {
+                for (Map.Entry<CustomerInformation, List<Account>> pair : data.entrySet()) {
+                    CustomerInformation key = pair.getKey();
+                    if (key.getCustomerNumber() == cst_no) {//Checks if the created acct no. exists.
+                        end = true;
+                        break;
+                    }
+                }
+				if (!end) {
 					System.out.println("\nThis customer number is already registered");
 				}
-
-//					if (!data.containsKey(cst_no)) {//Checks if the created acct no. exists.
-//						end = true;
-//					}
-//				}
-//
 			} catch (InputMismatchException e) {
-				System.out.println("Invalid Choice.");
+				System.out.println("\nInvalid Choice.");
 				menuInput.next();
 			}
-			addMoreAccounts(customer);
-		System.out.println("Redirecting to login.............");
+		}
+		System.out.println("\nEnter PIN to be registered");
+		int pin = menuInput.nextInt();
+		CustomerInformation newCustomer = new CustomerInformation(cst_no, pin);
+		List<Account> newCustomerAccount = addBankAccount(newCustomer);
+		data.put(newCustomer, newCustomerAccount); //Customer's data is now in the system
+		System.out.println("\nYour new account has been successfuly registered!");
+		System.out.println("\nRedirecting to login.............");
 		getLogin();
 	}
 
 
-
-	public void mainMenu() throws IOException { //Where everything starts from line 10 of ATM class
+	//Step 1: Where everything starts from line 10 of ATM class -> Step 1
+	public void mainMenu() throws IOException {
 		//Modified the Map completely to remove redundancies and bottlenecks.
-
 //		data.put((952141, 191904), new ArrayList<>(List.of(new Account(, 1000, 5000))));
 //		data.put(123, new ArrayList<>(List.of(new Account(123, 123, 20000, 50000))));
+
 		initializeSampleData();
 		boolean end = false;
 		while (!end) {
@@ -285,7 +260,7 @@ public class OptionMenu {
 					end = true;
 					break;
 				case 2:
-					createAccount();
+					createProfile();
 					end = true;
 					break;
 				default:
@@ -301,51 +276,51 @@ public class OptionMenu {
 		System.exit(0);
 	}
 
-	private void addMoreAccounts(CustomerInformation customer) {
-		while (true) {
-			System.out.println("\nDo you want to add another account? Select (Y/N):");
-			String custInput = menuInput.next();
-			if (custInput.equalsIgnoreCase("y")) {
-				break; // Proceed to add accounts
-			} else if (custInput.equalsIgnoreCase("n")) {
-				return; // Exit the method
-			} else {
-				System.out.println("\nInvalid Input! Please enter Y or N.");
-			}
+	public List<Account> addBankAccount(CustomerInformation customer) throws IOException {
+		List<Account> accounts = new ArrayList<>();
+		boolean end = false;
+		String accountType = "";
+		double initialAccountBalance = 0;
+		System.out.println("\nDo you want to add a bank account? Select (Y/N):");
+		String custInput = menuInput.next();
+		while (!end) {
+			try {
+				if (custInput.equalsIgnoreCase("n")) {
+					end = true;
+					return accounts; // breaks out the while loop - Still needs a return.
+				} else if (custInput.equalsIgnoreCase("y")) {
+					try {
+						System.out.println("Select account type to add:");
+						System.out.println("Type 1 - Checking Account");
+						System.out.println("Type 2 - Savings Account");
+						System.out.println("Type 3 - Exit");
+						int response = menuInput.nextInt();
+						System.out.println("Enter initial deposit amount:");
+						initialAccountBalance = menuInput.nextDouble();
 
-			boolean addAccount = true;
-			while (addAccount) {
-				System.out.println("\nEnter your PIN to add an account:");
-				int pin = menuInput.nextInt();
-				if (pin != customer.getPinNumber()) {
-					System.out.println("Incorrect PIN. Try again.");
-					continue;
+						switch (response) {
+							case 1:
+								accounts.add(new Account("Checking", initialAccountBalance));
+								System.out.println("Checking account added");
+							case 2:
+								accounts.add(new Account("Savings", initialAccountBalance));
+								System.out.println("Savings account added");
+							case 3:
+								end = true;
+								break;
+							default:
+								System.out.println("Invalid choice. Please select from the following menu.");
+						}
+					} catch (InputMismatchException e){
+						System.out.println("Invalid input. Please select from the following menu");
+					} //End of Second catch block
 				}
-
-				//This is to distinguish what the user will select when adding a new account into their profile.
-				String accountType = "";
-				while (true) {
-					System.out.println("\nEnter account type (Checking/Savings):");
-					accountType = menuInput.next();
-					if (accountType.equalsIgnoreCase("Checking") || accountType.equalsIgnoreCase("Savings")) {
-						break;
-					} else {
-						System.out.println("\nInvalid Input!");
-					}
-				}
-				Account newAccount = new Account();
-				data.get(customer).add(newAccount); //Customer's data is now in the system
-				System.out.println("\nAccount added successfully!");
-
-				System.out.println("\nDo you want to add another account? Select (Y/N):");
-				String response = menuInput.next();
-				if (response.equalsIgnoreCase("n")) {
-					addAccount = false;
-				} else if (!response.equalsIgnoreCase("y")) {
-					System.out.println("\nInvalid Input! Please enter Y or N.");
-				}
-			}
-		}
+			} catch (InputMismatchException e){
+				System.out.println("\nInvalid Choice. Please enter (Y for Yes or N for No.)");
+			} //End of  First catch block
+			System.out.println("\nDo you want to add another bank account? Select (Y/N):");
+		} //End of While loop
+		return accounts;
 	}
 
 	void initializeSampleData() {
@@ -365,4 +340,15 @@ public class OptionMenu {
 		accounts2.add(savings2);
 		data.put(customer2, accounts2);
 	}
+
+	CustomerInformation findCustomerByNumber(int customerNumber) {
+		for (CustomerInformation customer : data.keySet()) {
+			if (customer.getCustomerNumber() == customerNumber) {
+				return customer;
+			}
+		}
+		return null;
+	}
 }
+
+
