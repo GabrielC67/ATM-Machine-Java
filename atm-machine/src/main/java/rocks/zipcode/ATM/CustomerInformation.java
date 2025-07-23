@@ -36,11 +36,44 @@ public class CustomerInformation {
         return pinNumber;
     }
 
-    // Override equals and hashCode for use as HashMap key
+
+    //Old equals and hashcode methods
+//    // Override equals and hashCode for use as HashMap key
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (!(o instanceof CustomerInformation)) return false;
+//        CustomerInformation that = (CustomerInformation) o;
+//        return customerNumber == that.customerNumber && pinNumber == that.pinNumber;
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return Objects.hash(customerNumber, pinNumber);
+//    }
+//
+//    //This will allow the user to change their PIN
+//    public void getPinChangeInput() {
+//        Scanner scanner = new Scanner(System.in);
+//        while (true) {
+//            System.out.print("Enter your new PIN (digits only): ");
+//            String input = scanner.nextLine();
+//            if (input.matches("\\d+")) {
+//                this.pinNumber = Integer.parseInt(input);
+//                System.out.println("PIN changed successfully.");
+//                break;
+//            } else {
+//                System.out.println("Invalid PIN. Please enter digits only.");
+//            }
+//        }
+//    }
+
+
+    //New Override and Hashcode methods
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof CustomerInformation)) return false;
+        if (o == null || getClass() != o.getClass()) return false;
         CustomerInformation that = (CustomerInformation) o;
         return customerNumber == that.customerNumber && pinNumber == that.pinNumber;
     }
@@ -48,21 +81,5 @@ public class CustomerInformation {
     @Override
     public int hashCode() {
         return Objects.hash(customerNumber, pinNumber);
-    }
-
-    //This will allow the user to change their PIN
-    public void getPinChangeInput() {
-        Scanner scanner = new Scanner(System.in);
-        while (true) {
-            System.out.print("Enter your new PIN (digits only): ");
-            String input = scanner.nextLine();
-            if (input.matches("\\d+")) {
-                this.pinNumber = Integer.parseInt(input);
-                System.out.println("PIN changed successfully.");
-                break;
-            } else {
-                System.out.println("Invalid PIN. Please enter digits only.");
-            }
-        }
     }
 }

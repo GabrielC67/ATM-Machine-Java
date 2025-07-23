@@ -15,39 +15,41 @@ public class OptionMenu {
 		boolean end = false;
 		int customerNumber = 0;
 		int pinNumber = 0;
-		CustomerInformation customerInformation = new CustomerInformation();
 		while (!end) {
 			try {
 				System.out.println("Enter your customer number: ");
 				customerNumber = menuInput.nextInt();
 				System.out.println("Enter your PIN number: ");
 				pinNumber = menuInput.nextInt(); //Customer inputs PIN Number
-				customerInformation.setCustomerNumber(customerNumber);
-				customerInformation.setPinNumber(pinNumber); /*Now that this information is set by the customer after
+				 /*Now that this information is set by the customer after
 				the machine asks them for the information, I need to match it up with what's already in the database.*/
 
-                // Find accounts with matching PIN
-                CustomerInformation matchedCustomer = null;
-                for(CustomerInformation customerInfo : data.keySet()) { //Iterate through data already in the HashMap
-                    if(customerInfo.getCustomerNumber() == customerNumber && customerInfo.getPinNumber() == pinNumber) { //Match data with input
-                        matchedCustomer = customerInfo;
-                        break;
-                    }
-                }
+				CustomerInformation loginAttempt = new CustomerInformation(customerNumber, pinNumber);
 
-                if (matchedCustomer != null) {
-                    List<Account> matchedAccounts = data.get(matchedCustomer);
+				System.out.println("Current customers in system:");
+				for (CustomerInformation ci : data.keySet()) {
+					System.out.println("CustomerNumber: " + ci.getCustomerNumber() + ", Pin: " + ci.getPinNumber());
+				}
 
-                    if (!matchedAccounts.isEmpty()) {
-                        getAccountType(matchedAccounts); //Now go to line 58
-                        end = true;
-                    }
-                }
-
-
-                if (!end) {
-                    System.out.println("\nWrong Customer Number or Pin Number");
-                } //Customer will have to try again due to this being in While loop.
+				if (data.containsKey(loginAttempt)) {
+					List<Account> matchedAccounts = data.get(loginAttempt);
+					if (matchedAccounts.isEmpty()) {
+					System.out.println("\nNo accounts found in your profile.");
+					matchedAccounts = addBankAccount(loginAttempt);
+						data.put(loginAttempt, matchedAccounts);
+						if (!matchedAccounts.isEmpty()) {
+							getAccountType(matchedAccounts);
+							break;
+						} else {
+							System.out.println("\nYou must have at least one account to proceed.");
+						}
+					}  else {
+						getAccountType(matchedAccounts);
+						break;
+					}
+				} else {
+					System.out.println("\nWrong Customer Number or Pin Number");
+				}
             } catch (InputMismatchException e) {
 				System.out.println("Invalid Character(s). Only Numbers.");
 			} //Same thing, customer will try again.
@@ -104,12 +106,12 @@ public class OptionMenu {
 							System.out.println("2: Secondary Savings Account");
 							int idx = menuInput.nextInt() - 1;
 							if (idx == 0 || idx == 1) {
-								getSaving(savingsAccounts.get(idx));
+								getSavings(savingsAccounts.get(idx));
 							} else {
 								System.out.println("Invalid selection.");
 							}
 						} else if (savingsAccounts.size() == 1) {
-							getSaving(savingsAccounts.get(0));
+							getSavings(savingsAccounts.get(0));
 						} else {
 							System.out.println("No savings account found.\n");
 						}
@@ -172,7 +174,7 @@ public class OptionMenu {
 		}
 	}
 
-	public void getSaving(Account acc) {
+	public void getSavings(Account acc) {
 		boolean end = false;
 		while (!end) {
 			try {
@@ -186,13 +188,13 @@ public class OptionMenu {
 				int selection = menuInput.nextInt();
 				switch (selection) {
 				case 1:
-					System.out.println("\nSavings Account Balance: " + moneyFormat.format(acc.getSavingBalance()));
+					System.out.println("\nSavings Account Balance: " + moneyFormat.format(acc.getSavingsBalance()));
 					break;
 				case 2:
-					acc.getsavingWithdrawInput();
+					acc.getSavingsWithdrawInput();
 					break;
 				case 3:
-					acc.getSavingDepositInput();
+					acc.getSavingsDepositInput();
 					break;
 				case 4:
 					acc.getTransferInput("Savings");
@@ -215,20 +217,22 @@ public class OptionMenu {
 		CustomerInformation customer;
 
 		int cst_no = 0;
-		boolean end = false;
-		while (!end) {
+		boolean valid = false;
+		while (!valid) {
 			try {
 				System.out.println("\nEnter your customer number ");
 				cst_no = menuInput.nextInt();
+				boolean isDuplicate = false;
                 for (Map.Entry<CustomerInformation, List<Account>> pair : data.entrySet()) {
                     CustomerInformation key = pair.getKey();
                     if (key.getCustomerNumber() == cst_no) {//Checks if the created acct no. exists.
-                        end = true;
+						System.out.println("\nThis customer number is already registered");
+                        isDuplicate = true;
                         break;
                     }
                 }
-				if (!end) {
-					System.out.println("\nThis customer number is already registered");
+				if (!isDuplicate) {
+					valid = true;
 				}
 			} catch (InputMismatchException e) {
 				System.out.println("\nInvalid Choice.");
@@ -285,12 +289,12 @@ public class OptionMenu {
 	public List<Account> addBankAccount(CustomerInformation customer) throws IOException {
 		List<Account> accounts = new ArrayList<>();
 		boolean end = false;
-		String accountType = "";
 		double initialAccountBalance = 0;
-		System.out.println("\nDo you want to add a bank account? Select (Y/N):");
-		String custInput = menuInput.next();
+		System.out.println("\nWould you like to add a bank account? Select (Y/N):");
+		String custInput = "";
 		while (!end) {
 			try {
+				custInput = menuInput.next();
 				if (custInput.equalsIgnoreCase("n")) {
 					end = true;
 					return accounts; // breaks out the while loop - Still needs a return.
@@ -301,30 +305,32 @@ public class OptionMenu {
 						System.out.println("Type 2 - Savings Account");
 						System.out.println("Type 3 - Exit");
 						int response = menuInput.nextInt();
-						System.out.println("\nEnter initial deposit amount:");
-						initialAccountBalance = menuInput.nextDouble();
+
+
+						if (response == 3) {
+							end = true;
+							break;
+							}
 
 						String type = response == 1 ? "Checking" : response == 2 ? "Savings" : "";
+						if (type.isEmpty()) {
+							System.out.println("\nInvalid choice. Please select from the following menu.");
+							continue;
+						}
+
 						long count = accounts.stream()
 								.filter(a -> a.getAccountType().equalsIgnoreCase(type))
 								.count();
 
-						if ((response == 1 || response == 2) && count >= 2) {
+						if (count >= 2) {
 							System.out.println("\nYou cannot have more than two " + type + " accounts.");
 							continue;
 						}
 
-						if (response == 1 || response == 2) {
-							System.out.println("\nEnter initial deposit amount:");
-							initialAccountBalance = menuInput.nextDouble();
-							accounts.add(new Account(type, initialAccountBalance));
-							System.out.println("\n" + type + " account added");
-						} else if (response == 3) {
-							end = true;
-							break;
-						} else {
-							System.out.println("\nInvalid choice. Please select from the following menu.");
-						}
+						System.out.println("\nEnter initial deposit amount:");
+						initialAccountBalance = menuInput.nextDouble();
+						accounts.add(new Account(type, initialAccountBalance));
+						System.out.println("\n" + type + " account added");
 					} catch (InputMismatchException e){
 						System.out.println("\nInvalid input. Please select from the following menu");
 					} //End of Second catch block
@@ -340,7 +346,7 @@ public class OptionMenu {
 	void initializeSampleData() {
 		CustomerInformation customer1 = new CustomerInformation(952141, 191904);
 		Account checking1 = new Account("Checking", 1000.00);
-		Account savings1 = new Account("Saving", 5000.00);
+		Account savings1 = new Account("Savings", 5000.00);
 		List<Account> accounts1 = new ArrayList<>();
 		accounts1.add(checking1);
 		accounts1.add(savings1);
@@ -348,7 +354,7 @@ public class OptionMenu {
 
 		CustomerInformation customer2 = new CustomerInformation(123, 123);
 		Account checking2 = new Account("Checking", 20000.00);
-		Account savings2 = new Account("Saving", 50000.00);
+		Account savings2 = new Account("Savings", 50000.00);
 		List<Account> accounts2 = new ArrayList<>();
 		accounts2.add(checking2);
 		accounts2.add(savings2);
@@ -379,7 +385,7 @@ public class OptionMenu {
 					checkingCount++;
 				} else if (acc.isSavingsAccount()) {
 					String label = savingsCount == 0 ? "Primary" : "Secondary";
-					System.out.println(label + " Savings Account Balance: " + moneyFormat.format(acc.getSavingBalance()));
+					System.out.println(label + " Savings Account Balance: " + moneyFormat.format(acc.getSavingsBalance()) + "\n");
 					savingsCount++;
 				}
 			}
@@ -405,7 +411,7 @@ public class OptionMenu {
 				if (acc.isCheckingAccount()) {
 					System.out.println("Checking Account Balance: " + moneyFormat.format(acc.getCheckingBalance()));
 				} else if (acc.isSavingsAccount()) {
-					System.out.println("Savings Account Balance: " + moneyFormat.format(acc.getSavingBalance()));
+					System.out.println("Savings Account Balance: " + moneyFormat.format(acc.getSavingsBalance()));
 				}
 			} else {
 				System.out.println("Invalid selection.");

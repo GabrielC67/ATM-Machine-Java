@@ -7,7 +7,7 @@ import java.util.Scanner;
 public class Account {
 	// variables
 	private Double checkingBalance = 0.00;
-	private Double savingBalance = 0.00;
+	private Double savingsBalance = 0.00;
 	private String accountType;
 
 	Scanner input = new Scanner(System.in);
@@ -19,8 +19,8 @@ public class Account {
 		this.accountType = accountType;
 		if ("Checking".equalsIgnoreCase(accountType)) {
 			this.checkingBalance = balance;
-		} else if ("Saving".equalsIgnoreCase(accountType)) {
-			this.savingBalance = balance;
+		} else if ("Savings".equalsIgnoreCase(accountType)) {
+			this.savingsBalance = balance;
 		} else {
 			throw new IllegalArgumentException("Invalid account type: " + accountType);
 		}
@@ -42,8 +42,8 @@ public class Account {
 		return checkingBalance;
 	}
 
-	public double getSavingBalance() {
-		return savingBalance;
+	public double getSavingsBalance() {
+		return savingsBalance;
 	}
 
 	public double calcCheckingWithdraw(Double amount) {
@@ -51,9 +51,9 @@ public class Account {
 		return checkingBalance;
 	}
 
-	public double calcSavingWithdraw(Double amount) {
-		savingBalance = (savingBalance - amount);
-		return savingBalance;
+	public double calcSavingsWithdraw(Double amount) {
+		savingsBalance = (savingsBalance - amount);
+		return savingsBalance;
 	}
 
 	public double calcCheckingDeposit(Double amount) {
@@ -61,18 +61,18 @@ public class Account {
 		return checkingBalance;
 	}
 
-	public double calcSavingDeposit(Double amount) {
-		savingBalance = (savingBalance + amount);
-		return savingBalance;
+	public double calcSavingsDeposit(Double amount) {
+		savingsBalance = (savingsBalance + amount);
+		return savingsBalance;
 	}
 
-	public void calcCheckTransfer(Double amount) {
+	public void calcCheckingTransfer(Double amount) {
 		checkingBalance = checkingBalance - amount;
-		savingBalance = savingBalance + amount;
+		savingsBalance = savingsBalance + amount;
 	}
 
-	public void calcSavingTransfer(Double amount) {
-		savingBalance = savingBalance - amount;
+	public void calcSavingsTransfer(Double amount) {
+		savingsBalance = savingsBalance - amount;
 		checkingBalance = checkingBalance + amount;
 	}
 
@@ -97,16 +97,16 @@ public class Account {
 		}
 	}
 
-	public void getsavingWithdrawInput() {
+	public void getSavingsWithdrawInput() {
 		boolean end = false;
 		while (!end) {
 			try {
-				System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
+				System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingsBalance));
 				System.out.print("\nAmount you want to withdraw from Savings Account: ");
 				Double amount = input.nextDouble();
-				if ((savingBalance - amount) >= 0 && amount >= 0) {
-					calcSavingWithdraw(amount);
-					System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
+				if ((savingsBalance - amount) >= 0 && amount >= 0) {
+					calcSavingsWithdraw(amount);
+					System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingsBalance));
 					end = true;
 				} else {
 					System.out.println("\nBalance Cannot Be Negative.");
@@ -139,17 +139,17 @@ public class Account {
 		}
 	}
 
-	public void getSavingDepositInput() {
+	public void getSavingsDepositInput() {
 		boolean end = false;
 		while (!end) {
 			try {
-				System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
+				System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingsBalance));
 				System.out.print("\nAmount you want to deposit into your Savings Account: ");
 				Double amount = input.nextDouble();
 
-				if ((savingBalance + amount) >= 0 && amount >= 0) {
-					calcSavingDeposit(amount);
-					System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
+				if ((savingsBalance + amount) >= 0 && amount >= 0) {
+					calcSavingsDeposit(amount);
+					System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingsBalance));
 					end = true;
 				} else {
 					System.out.println("\nBalance Cannot Be Negative.");
@@ -176,9 +176,9 @@ public class Account {
 						System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 						System.out.print("\nAmount you want to deposit into your Savings Account: ");
 						Double amount = input.nextDouble();
-						if ((savingBalance + amount) >= 0 && (checkingBalance - amount) >= 0 && amount >= 0) {
-							calcCheckTransfer(amount);
-							System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
+						if ((savingsBalance + amount) >= 0 && (checkingBalance - amount) >= 0 && amount >= 0) {
+							calcCheckingTransfer(amount);
+							System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingsBalance));
 							System.out.println(
 									"\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
 							end = true;
@@ -200,13 +200,13 @@ public class Account {
 					int choice = input.nextInt();
 					switch (choice) {
 					case 1:
-						System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingBalance));
+						System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingsBalance));
 						System.out.print("\nAmount you want to deposit into your savings account: ");
 						Double amount = input.nextDouble();
-						if ((checkingBalance + amount) >= 0 && (savingBalance - amount) >= 0 && amount >= 0) {
-							calcSavingTransfer(amount);
+						if ((checkingBalance + amount) >= 0 && (savingsBalance - amount) >= 0 && amount >= 0) {
+							calcSavingsTransfer(amount);
 							System.out.println("\nCurrent checking account balance: " + moneyFormat.format(checkingBalance));
-							System.out.println("\nCurrent savings account balance: " + moneyFormat.format(savingBalance));
+							System.out.println("\nCurrent savings account balance: " + moneyFormat.format(savingsBalance));
 							end = true;
 						} else {
 							System.out.println("\nBalance Cannot Be Negative.");
