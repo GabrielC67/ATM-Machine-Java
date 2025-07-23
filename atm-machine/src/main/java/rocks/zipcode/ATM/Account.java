@@ -26,6 +26,10 @@ public class Account {
 		}
 	}
 
+	public String getAccountType() {
+		return this.accountType;
+	}
+
 	public boolean isCheckingAccount() {
 		return "Checking".equalsIgnoreCase(accountType);
 	}
