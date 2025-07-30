@@ -8,6 +8,7 @@ Using the existing code, add the following functionality.
 ## Additions
 
 ~~- Add the ability to show statement of all your account balances~~
+
 ~~- Add ability to have multiple accounts within the ATM~~
 - Add a means to SAVE all account data to a file used by the ATM
   - Keep state of account(s) between runnings of ATM
