@@ -7,8 +7,12 @@ import java.util.Scanner;
 public class Account {
 	// variables
 	private Double checkingBalance = 0.00;
+	private Double secondaryCheckingBalance = 0.00;
 	private Double savingsBalance = 0.00;
+	private Double secondarySavingsBalance = 0.00;
 	private String accountType;
+
+
 
 	Scanner input = new Scanner(System.in);
 	DecimalFormat moneyFormat = new DecimalFormat("'$'###,##0.00");
@@ -44,6 +48,22 @@ public class Account {
 
 	public double getSavingsBalance() {
 		return savingsBalance;
+	}
+
+	public Double getSecondaryCheckingBalance() {
+		return secondaryCheckingBalance;
+	}
+
+	public void setSecondaryCheckingBalance(Double secondaryCheckingBalance) {
+		this.secondaryCheckingBalance = secondaryCheckingBalance;
+	}
+
+	public Double getSecondarySavingsBalance() {
+		return secondarySavingsBalance;
+	}
+
+	public void setSecondarySavingsBalance(Double secondarySavingsBalance) {
+		this.secondarySavingsBalance = secondarySavingsBalance;
 	}
 
 	public double calcCheckingWithdraw(Double amount) {
@@ -165,64 +185,93 @@ public class Account {
 		boolean end = false;
 		while (!end) {
 			try {
-				if (accType.equals("Checking")) {
-					System.out.println("\nSelect an account you wish to transfer funds to:");
-					System.out.println("1. Savings");
-					System.out.println("2. Exit");
-					System.out.print("\nChoice: ");
-					int choice = input.nextInt();
-					switch (choice) {
-					case 1:
-						System.out.println("\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
-						System.out.print("\nAmount you want to deposit into your Savings Account: ");
-						Double amount = input.nextDouble();
-						if ((savingsBalance + amount) >= 0 && (checkingBalance - amount) >= 0 && amount >= 0) {
-							calcCheckingTransfer(amount);
-							System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingsBalance));
-							System.out.println(
-									"\nCurrent Checking Account Balance: " + moneyFormat.format(checkingBalance));
-							end = true;
-						} else {
-							System.out.println("\nBalance Cannot Be Negative.");
-						}
+				// Prompt for primary/secondary if applicable
+				String fromAccount = accType;
+				if ("Checking".equalsIgnoreCase(accType)) {
+					//System needs to check if there's a secondary checking account.
+					System.out.println("Transfer from: \n1. Primary Checking  \n2. Secondary Checking");
+					int fromChoice = input.nextInt();
+					fromAccount = (fromChoice == 2) ? "Secondary Checking" : "Checking";
+				}
+
+				else if ("Savings".equalsIgnoreCase(accType)) {
+					//System needs to check if there's a secondary savings account.
+					System.out.println("Transfer from: \n1. Primary Savings  \n2. Secondary Savings");
+					int fromChoice = input.nextInt();
+					fromAccount = (fromChoice == 2) ? "Secondary Savings" : "Savings";
+				}
+
+				// Prompt for destination
+				System.out.println("Transfer to: \n1. Checking  \n2. Secondary Checking  \n3. Savings  \n4. Secondary Savings  \n5. Exit");
+				int toChoice = input.nextInt();
+
+				if (toChoice == 5){
+					return;
+				}
+
+				String toAccount = switch (toChoice) {
+					case 1 -> "Checking";
+					case 2 -> "Secondary Checking";
+					case 3 -> "Savings";
+					case 4 -> "Secondary Savings";
+					default -> null;
+				};
+
+				if (toAccount == null || toAccount.equals(fromAccount)) {
+					System.out.println("\nInvalid or same account selected.");
+					System.out.println("\nDo you want to make a transfer? (Y/N)");
+					String choice = input.nextLine();
+
+					if (choice.equalsIgnoreCase("y")){
+						continue;
+					} else if (choice.equalsIgnoreCase("n")){
+						end = true;
 						break;
-					case 2:
+					} else{
+						System.out.println("Invalid Input");
 						return;
-					default:
-						System.out.println("\nInvalid Choice.");
-						break;
-					}
-				} else if (accType.equals("Savings")) {
-					System.out.println("\nSelect an account you wish to transfer funds to: ");
-					System.out.println("1. Checking");
-					System.out.println("2. Exit");
-					System.out.print("\nChoice: ");
-					int choice = input.nextInt();
-					switch (choice) {
-					case 1:
-						System.out.println("\nCurrent Savings Account Balance: " + moneyFormat.format(savingsBalance));
-						System.out.print("\nAmount you want to deposit into your savings account: ");
-						Double amount = input.nextDouble();
-						if ((checkingBalance + amount) >= 0 && (savingsBalance - amount) >= 0 && amount >= 0) {
-							calcSavingsTransfer(amount);
-							System.out.println("\nCurrent checking account balance: " + moneyFormat.format(checkingBalance));
-							System.out.println("\nCurrent savings account balance: " + moneyFormat.format(savingsBalance));
-							end = true;
-						} else {
-							System.out.println("\nBalance Cannot Be Negative.");
-						}
-						break;
-					case 2:
-						return;
-					default:
-						System.out.println("\nInvalid Choice.");
-						break;
 					}
 				}
+
+				System.out.print("\nAmount to transfer: ");
+				Double amount = input.nextDouble();
+
+				// Get balances by reference
+				Double fromBalance = getBalanceByType(fromAccount);
+				Double toBalance = getBalanceByType(toAccount);
+
+				if (fromBalance != null && toBalance != null && fromBalance - amount >= 0 && amount >= 0) {
+					setBalanceByType(fromAccount, fromBalance - amount);
+					setBalanceByType(toAccount, toBalance + amount);
+					System.out.println("\nTransfer successful.");
+					end = true;
+				} else {
+					System.out.println("\nInsufficient funds or invalid amount.");
+				}
 			} catch (InputMismatchException e) {
-				System.out.println("\nInvalid Choice.");
+				System.out.println("\nInvalid input.");
 				input.next();
 			}
+		}
+	}
+
+	// Helper methods
+	private Double getBalanceByType(String type) {
+		return switch (type) {
+			case "Checking" -> checkingBalance;
+			case "Secondary Checking" -> secondaryCheckingBalance;
+			case "Savings" -> savingsBalance;
+			case "Secondary Savings" -> secondarySavingsBalance;
+			default -> null;
+		};
+	}
+
+	private void setBalanceByType(String type, Double value) {
+		switch (type) {
+			case "Checking" -> checkingBalance = value;
+			case "Secondary Checking" -> secondaryCheckingBalance = value;
+			case "Savings" -> savingsBalance = value;
+			case "Secondary Savings" -> secondarySavingsBalance = value;
 		}
 	}
 }
